@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SignBridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0A0E27;
+    --bg-panel:#121A3C;
+    --bg-panel-2:#161F47;
+    --accent-blue:#4F8EF7;
+    --accent-purple:#8B5CF6;
+    --accent-grad:linear-gradient(135deg,#4F8EF7,#8B5CF6);
+    --text-primary:#F5F7FF;
+    --text-secondary:#93A0C9;
+    --text-dim:#6672A0;
+    --success:#34D399;
+    --warn:#FBBF24;
+    --danger:#F87171;
+    --border:rgba(255,255,255,0.08);
+    --shadow:0 20px 60px rgba(0,0,0,0.45);
+    --radius-lg:26px;
+    --radius-md:18px;
+    --radius-sm:12px;
+    --font-display:'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-body:'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+  :root:not([data-theme="light"]){ }
+  :root[data-theme="light"]{
+    --bg-deep:#EEF1FB;
+    --bg-panel:#FFFFFF;
+    --bg-panel-2:#F4F6FE;
+    --text-primary:#111531;
+    --text-secondary:#535E8C;
+    --text-dim:#8890B5;
+    --border:rgba(20,25,60,0.09);
+    --shadow:0 20px 60px rgba(30,40,90,0.12);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg-deep:#EEF1FB;
+      --bg-panel:#FFFFFF;
+      --bg-panel-2:#F4F6FE;
+      --text-primary:#111531;
+      --text-secondary:#535E8C;
+      --text-dim:#8890B5;
+      --border:rgba(20,25,60,0.09);
+      --shadow:0 20px 60px rgba(30,40,90,0.12);
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0;
+    background:var(--bg-deep);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    display:flex;
+    justify-content:center;
+    min-height:100%;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(79,142,247,0.16), transparent 45%),
+      radial-gradient(circle at 90% 20%, rgba(139,92,246,0.14), transparent 40%);
+    pointer-events:none;
+    z-index:0;
+  }
+  #app{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:440px;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--bg-deep);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  @media (min-width:480px){
+    #app{
+      margin:18px 0;
+      min-height:calc(100dvh - 36px);
+      border-radius:34px;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+    }
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    flex:1;
+    min-height:0;
+    animation:fadeIn .35s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- generic bits ---------- */
+  .pad{padding:20px 22px;}
+  .grow{flex:1; min-height:0; overflow-y:auto;}
+  .brand{
+    font-family:var(--font-display);
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .brand .hi{background:var(--accent-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  h1,h2,h3{font-family:var(--font-display); margin:0; letter-spacing:-0.01em;}
+  p{margin:0; color:var(--text-secondary); line-height:1.5;}
+  button{font-family:var(--font-body); cursor:pointer;}
+  .btn{
+    border:none; border-radius:16px; padding:15px 18px; font-size:15px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary{background:var(--accent-grad); color:#fff; box-shadow:0 10px 24px rgba(79,142,247,0.35);}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-ghost{background:var(--bg-panel-2); color:var(--text-primary); border:1px solid var(--border);}
+  .btn-outline{background:transparent; color:var(--accent-blue); border:1.5px solid var(--accent-blue);}
+  .btn-sm{padding:10px 14px; font-size:13px; border-radius:12px;}
+  .icon-btn{
+    width:38px; height:38px; border-radius:12px; border:1px solid var(--border);
+    background:var(--bg-panel-2); color:var(--text-primary); display:flex; align-items:center; justify-content:center;
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px 6px;
+  }
+  .topbar h2{font-size:18px;}
+  .field{
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg-panel-2); border:1px solid var(--border);
+    border-radius:14px; padding:13px 15px; margin-bottom:12px;
+  }
+  .field input{
+    border:none; background:transparent; outline:none; color:var(--text-primary);
+    font-size:14px; width:100%; font-family:var(--font-body);
+  }
+  .field input::placeholder{color:var(--text-dim);}
+  .card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius-md);
+  }
+  .hidden{display:none !important;}
+  ::-webkit-scrollbar{width:0; height:0;}
+
+  /* ---------- splash ---------- */
+  #screen-splash{align-items:center; justify-content:center; text-align:center; gap:22px; position:relative;}
+  .splash-glyph{
+    width:120px; height:120px; border-radius:32px;
+    background:var(--accent-grad);
+    display:flex; align-items:center; justify-content:center;
+    font-size:56px;
+    box-shadow:0 20px 50px rgba(79,142,247,0.4);
+    animation:pop .6s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop{from{transform:scale(.4); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .splash-bar{width:140px; height:4px; border-radius:4px; background:var(--bg-panel-2); overflow:hidden;}
+  .splash-bar span{display:block; height:100%; width:40%; background:var(--accent-grad); border-radius:4px; animation:slide 1.1s ease-in-out infinite;}
+  @keyframes slide{0%{margin-left:-40%;} 100%{margin-left:100%;}}
+
+  /* ---------- onboarding ---------- */
+  #screen-onboard{justify-content:space-between;}
+  .ob-skip{align-self:flex-end; margin:16px 20px 0; color:var(--text-dim); font-size:13px; background:none; border:none;}
+  .ob-slides{flex:1; position:relative; overflow:hidden;}
+  .ob-slide{
+    position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:10px 34px; gap:16px;
+  }
+  .ob-slide.active{display:flex; animation:fadeIn .4s ease;}
+  .ob-art{width:150px; height:150px; border-radius:50%; background:var(--bg-panel-2); display:flex; align-items:center; justify-content:center; font-size:64px; border:1px solid var(--border);}
+  .ob-slide h2{font-size:22px;}
+  .ob-slide p{font-size:14px; max-width:280px;}
+  .ob-foot{padding:22px; display:flex; align-items:center; justify-content:space-between;}
+  .dots{display:flex; gap:6px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--bg-panel-2); border:1px solid var(--border);}
+  .dot.active{width:20px; background:var(--accent-grad); border:none;}
+  .fab{width:48px; height:48px; border-radius:50%; background:var(--accent-grad); color:#fff; border:none; display:flex; align-items:center; justify-content:center; font-size:18px;}
+
+  /* ---------- auth ---------- */
+  #screen-auth .pad{flex:1; display:flex; flex-direction:column; justify-content:center;}
+  .auth-logo{display:flex; justify-content:center; margin-bottom:22px;}
+  .auth-logo .splash-glyph{width:70px; height:70px; font-size:32px; border-radius:20px;}
+  #screen-auth h1{text-align:center; font-size:24px;}
+  #screen-auth > .pad > p{text-align:center; margin-top:6px; margin-bottom:26px; font-size:13px;}
+  .divider{display:flex; align-items:center; gap:10px; color:var(--text-dim); font-size:12px; margin:18px 0;}
+  .divider::before,.divider::after{content:""; flex:1; height:1px; background:var(--border);}
+  .auth-switch{text-align:center; margin-top:16px; font-size:13px; color:var(--text-secondary);}
+  .auth-switch b{color:var(--accent-blue); font-weight:600; cursor:pointer;}
+
+  /* ---------- home ---------- */
+  .home-head{display:flex; align-items:center; justify-content:space-between; padding:18px 22px 4px;}
+  .home-head h2{font-size:19px;}
+  .home-head p{font-size:13px; margin-top:2px;}
+  .bell{width:40px; height:40px; border-radius:12px; background:var(--bg-panel-2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center;}
+  .action-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 22px 6px;}
+  .action-card{
+    border-radius:20px; padding:18px; color:#fff; text-align:left; border:none;
+    display:flex; flex-direction:column; gap:26px; min-height:108px;
+  }
+  .action-card.cam{background:linear-gradient(135deg,#4F8EF7,#3E6FE0);}
+  .action-card.up{background:linear-gradient(135deg,#8B5CF6,#6D3FE0);}
+  .action-card .em{font-size:22px; width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;}
+  .action-card strong{font-size:14px;}
+  .action-card span{font-size:11px; opacity:.85;}
+  .tile-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:10px 22px 16px;}
+  .tile{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:16px; padding:14px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+  }
+  .tile .ic{width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px;}
+  .tile span{font-size:11.5px; color:var(--text-primary); font-weight:600;}
+
+  /* ---------- bottom nav ---------- */
+  .bottomnav{
+    display:flex; align-items:center; justify-content:space-around;
+    padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--border); background:var(--bg-panel);
+    position:relative;
+  }
+  .navitem{display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--text-dim); font-size:10px; padding:4px 6px;}
+  .navitem .ic{font-size:18px;}
+  .navitem.active{color:var(--accent-blue);}
+  .navcam{
+    width:52px; height:52px; border-radius:50%; background:var(--accent-grad); color:#fff; border:none;
+    display:flex; align-items:center; justify-content:center; font-size:20px; margin-top:-26px;
+    box-shadow:0 10px 22px rgba(79,142,247,0.45);
+  }
+
+  /* ---------- camera ---------- */
+  #screen-camera .camwrap{position:relative; flex:1; background:#000; overflow:hidden;}
+  #video{width:100%; height:100%; object-fit:cover; display:block; transform:scaleX(-1);}
+  #overlay{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+  .roi{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:62%; aspect-ratio:1/1.1; border:2px solid rgba(255,255,255,0.0);
+  }
+  .roi .corner{position:absolute; width:26px; height:26px; border-color:var(--success); border-style:solid; border-width:0;}
+  .roi .c1{top:0; left:0; border-top-width:3px; border-left-width:3px; border-top-left-radius:8px;}
+  .roi .c2{top:0; right:0; border-top-width:3px; border-right-width:3px; border-top-right-radius:8px;}
+  .roi .c3{bottom:0; left:0; border-bottom-width:3px; border-left-width:3px; border-bottom-left-radius:8px;}
+  .roi .c4{bottom:0; right:0; border-bottom-width:3px; border-right-width:3px; border-bottom-right-radius:8px;}
+  .cam-hint{
+    position:absolute; bottom:14px; left:0; right:0; text-align:center; color:#fff; font-size:12px;
+    text-shadow:0 1px 4px rgba(0,0,0,.6);
+  }
+  .cam-top{
+    position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; z-index:2;
+  }
+  .cam-top button{background:rgba(0,0,0,0.4); border:none; color:#fff; width:36px; height:36px; border-radius:10px;}
+  .cam-controls{
+    padding:16px 22px calc(16px + env(safe-area-inset-bottom,0px)); background:var(--bg-panel);
+    display:flex; align-items:center; justify-content:center; gap:22px;
+  }
+  .shutter{width:66px; height:66px; border-radius:50%; background:#fff; border:5px solid rgba(255,255,255,0.35);}
+  .cam-side{width:44px; height:44px; border-radius:12px; background:var(--bg-panel-2); border:1px solid var(--border); color:var(--text-primary); font-size:18px;}
+  .cam-fallback{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:30px;}
+
+  /* ---------- processing ---------- */
+  #screen-processing .pad{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;}
+  .proc-frame{width:200px; height:200px; border-radius:22px; overflow:hidden; position:relative; background:#000; border:1px solid var(--border);}
+  .proc-frame canvas{width:100%; height:100%; object-fit:cover;}
+  .scanline{position:absolute; left:0; right:0; height:2px; background:var(--accent-blue); box-shadow:0 0 12px 2px rgba(79,142,247,.8); animation:scan 1.4s linear infinite;}
+  @keyframes scan{0%{top:0;} 100%{top:100%;}}
+  .proc-bar{width:220px; height:6px; border-radius:4px; background:var(--bg-panel-2); overflow:hidden;}
+  .proc-bar span{display:block; height:100%; width:0%; background:var(--accent-grad); border-radius:4px; transition:width .25s linear;}
+  .checklist{width:240px; display:flex; flex-direction:column; gap:10px;}
+  .check-row{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-dim);}
+  .check-row .dotbox{width:18px; height:18px; border-radius:50%; border:2px solid var(--border); flex:none; display:flex; align-items:center; justify-content:center; font-size:11px;}
+  .check-row.done{color:var(--text-primary);}
+  .check-row.done .dotbox{background:var(--success); border-color:var(--success); color:#08130d;}
+
+  /* ---------- result ---------- */
+  .result-hero{margin:16px 22px; border-radius:22px; overflow:hidden; position:relative; background:#000; height:220px;}
+  .result-hero canvas{width:100%; height:100%; object-fit:cover;}
+  .result-badge{position:absolute; bottom:10px; left:10px; background:rgba(10,14,39,.75); color:#fff; padding:5px 10px; border-radius:10px; font-size:11px; display:flex; align-items:center; gap:6px;}
+  .result-body{padding:2px 22px 18px; text-align:center;}
+  .result-label{font-size:44px; font-weight:700; font-family:var(--font-display);}
+  .result-sub{font-size:13px; color:var(--text-dim); margin-top:2px;}
+  .conf-row{display:flex; align-items:center; justify-content:center; gap:8px; margin:10px 0 16px; font-size:12px; color:var(--text-secondary);}
+  .conf-track{width:120px; height:5px; border-radius:4px; background:var(--bg-panel-2); overflow:hidden;}
+  .conf-track span{display:block; height:100%; background:var(--accent-grad);}
+  .result-actions{display:flex; gap:10px; margin-bottom:18px;}
+  .result-actions .btn{flex:1;}
+  .desc-card{padding:16px 18px; text-align:left; margin-bottom:16px;}
+  .desc-card h3{font-size:13px; margin-bottom:6px; color:var(--text-dim); font-weight:600; text-transform:none;}
+  .desc-card p{font-size:13.5px; color:var(--text-primary);}
+  .related-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+  .related-chip{
+    flex:none; width:60px; height:60px; border-radius:14px; background:var(--bg-panel-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; font-family:var(--font-display); color:var(--text-secondary);
+  }
+
+  /* ---------- sheet / voice modal ---------- */
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(4,6,20,0.55); z-index:20; display:none;}
+  .sheet-backdrop.show{display:block;}
+  .sheet{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; max-width:440px;
+    background:var(--bg-panel); border-radius:24px 24px 0 0; padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    border:1px solid var(--border); border-bottom:none;
+  }
+  .sheet-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .lang-row{display:flex; align-items:center; gap:12px; padding:12px 6px; border-bottom:1px solid var(--border); font-size:14px;}
+  .lang-row:last-of-type{border-bottom:none;}
+  .lang-flag{width:26px; height:26px; border-radius:7px; background:var(--bg-panel-2); display:flex; align-items:center; justify-content:center; font-size:13px;}
+  .lang-check{margin-left:auto; color:var(--success); font-weight:700;}
+
+  /* ---------- history ---------- */
+  .hist-row{display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border);}
+  .hist-row:last-child{border-bottom:none;}
+  .hist-thumb{width:44px; height:44px; border-radius:12px; background:var(--bg-panel-2); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:16px; color:var(--accent-blue);}
+  .hist-mid{flex:1; min-width:0;}
+  .hist-mid b{font-size:13.5px; display:block;}
+  .hist-mid span{font-size:11.5px; color:var(--text-dim);}
+  .hist-play{width:34px; height:34px; border-radius:10px; background:var(--bg-panel-2); border:1px solid var(--border); color:var(--accent-blue);}
+  .empty{padding:60px 30px; text-align:center; color:var(--text-dim); font-size:13px;}
+
+  /* ---------- guide ---------- */
+  .segmented{display:flex; gap:6px; padding:4px; background:var(--bg-panel-2); border-radius:14px; margin:8px 22px 14px;}
+  .seg-btn{flex:1; border:none; background:none; padding:9px 0; border-radius:11px; font-size:12.5px; font-weight:600; color:var(--text-dim);}
+  .seg-btn.active{background:var(--accent-grad); color:#fff;}
+  .az-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:9px; padding:0 22px 20px;}
+  .az-cell{
+    aspect-ratio:1; border-radius:13px; background:var(--bg-panel); border:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; position:relative;
+  }
+  .az-cell b{font-family:var(--font-display); font-size:16px;}
+  .az-cell .tag{font-size:8px; color:var(--text-dim);}
+  .az-cell.live{border-color:rgba(79,142,247,0.5); background:rgba(79,142,247,0.08);}
+  .az-cell.live .tag{color:var(--accent-blue);}
+  .word-list{padding:0 22px 20px; display:flex; flex-direction:column; gap:10px;}
+  .word-item{padding:14px 16px;}
+  .word-item b{font-size:14px;}
+  .word-item p{font-size:12.5px; margin-top:4px;}
+  .detail-backdrop{position:fixed; inset:0; background:rgba(4,6,20,0.6); z-index:25; display:none; align-items:flex-end;}
+  .detail-backdrop.show{display:flex;}
+  .detail-sheet{width:100%; max-width:440px; margin:0 auto; background:var(--bg-panel); border-radius:22px 22px 0 0; padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px)); text-align:center;}
+  .detail-glyph{font-family:var(--font-display); font-size:40px; font-weight:700; margin-bottom:6px;}
+
+  /* ---------- settings/about ---------- */
+  .set-row{display:flex; align-items:center; justify-content:space-between; padding:14px 4px; border-bottom:1px solid var(--border); font-size:14px;}
+  .set-row:last-child{border-bottom:none;}
+  .toggle{width:42px; height:24px; border-radius:20px; background:var(--bg-panel-2); border:1px solid var(--border); position:relative;}
+  .toggle.on{background:var(--accent-grad); border-color:transparent;}
+  .toggle::after{content:""; position:absolute; top:2px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:.2s;}
+  .toggle.on::after{left:auto; right:3px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#111531; color:#fff;
+    padding:11px 18px; border-radius:12px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:.25s;
+    box-shadow:0 10px 24px rgba(0,0,0,.4); max-width:80%; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SPLASH -->
+  <div class="screen active" id="screen-splash">
+    <div class="splash-glyph">🤟</div>
+    <div>
+      <h1 class="brand" style="font-size:26px;">Sign<span class="hi">Bridge</span></h1>
+      <p style="margin-top:6px; font-size:13px;">Bridging Hands, Breaking Barriers</p>
+    </div>
+    <div class="splash-bar"><span></span></div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="screen" id="screen-onboard">
+    <button class="ob-skip" onclick="goHomeOrAuth()">Skip</button>
+    <div class="ob-slides">
+      <div class="ob-slide active" data-i="0">
+        <div class="ob-art">👋</div>
+        <h2>Welcome to SignBridge</h2>
+        <p>An AI-powered sign language translator that turns hand signs into text and voice, instantly.</p>
+      </div>
+      <div class="ob-slide" data-i="1">
+        <div class="ob-art">🖐️</div>
+        <h2>Detect hand signs</h2>
+        <p>Use your live camera or upload an image — SignBridge reads the hand shape right on your device.</p>
+      </div>
+      <div class="ob-slide" data-i="2">
+        <div class="ob-art">🌐</div>
+        <h2>Speaks your language</h2>
+        <p>Get results as text and voice in English, Tamil, Hindi, Telugu, Malayalam, and more.</p>
+      </div>
+    </div>
+    <div class="ob-foot">
+      <div class="dots" id="ob-dots"></div>
+      <button class="fab" id="ob-next" onclick="nextOnboard()">→</button>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div class="screen" id="screen-auth">
+    <div class="pad">
+      <div class="auth-logo"><div class="splash-glyph">🤟</div></div>
+      <h1>Sign<span style="background:var(--accent-grad); -webkit-background-clip:text; background-clip:text; color:transparent;">Bridge</span></h1>
+      <p>Enter a name so we can say hello — everything stays on this device.</p>
+      <div class="field">
+        <span>👤</span>
+        <input id="auth-name" placeholder="Your name" maxlength="24">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="doLogin()">Continue →</button>
+      <div class="divider">or</div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="doGuest()">Continue as Guest</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="home-head">
+      <div>
+        <h2 id="home-greet">Hello 👋</h2>
+        <p>Let's break the communication barriers!</p>
+      </div>
+      <button class="bell" onclick="toast('No new notifications')">🔔</button>
+    </div>
+    <div class="grow">
+      <div class="action-grid">
+        <button class="action-card cam" onclick="openCamera()">
+          <span class="em">📷</span>
+          <div><strong>Live Camera</strong><br><span>Detect sign using camera</span></div>
+        </button>
+        <button class="action-card up" onclick="triggerUpload()">
+          <span class="em">🖼️</span>
+          <div><strong>Upload Image</strong><br><span>Choose image from gallery</span></div>
+        </button>
+      </div>
+      <div class="tile-grid">
+        <button class="tile" onclick="openGuide()"><span class="ic" style="background:rgba(139,92,246,.18); color:#B79BFF;">📘</span><span>Alphabet Guide</span></button>
+        <button class="tile" onclick="openHistory()"><span class="ic" style="background:rgba(79,142,247,.18); color:#8FB4FF;">🕘</span><span>History</span></button>
+        <button class="tile" onclick="openLangSheet()"><span class="ic" style="background:rgba(52,211,153,.18); color:#5EEAB0;">🌐</span><span>Languages</span></button>
+        <button class="tile" onclick="openSettings()"><span class="ic" style="background:rgba(251,191,36,.18); color:#FFD466;">⚙️</span><span>Settings</span></button>
+        <button class="tile" onclick="toast('SignBridge v1.0 — demo build')"><span class="ic" style="background:rgba(248,113,113,.18); color:#FF9C9C;">ℹ️</span><span>About</span></button>
+        <button class="tile" onclick="openGuide('Words')"><span class="ic" style="background:rgba(79,142,247,.18); color:#8FB4FF;">💬</span><span>Common Words</span></button>
+      </div>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem active" data-nav="home" onclick="openHome()"><span class="ic">🏠</span>Home</button>
+      <button class="navitem" data-nav="guide" onclick="openGuide()"><span class="ic">📘</span>Guide</button>
+      <button class="navcam" onclick="openCamera()">🤚</button>
+      <button class="navitem" data-nav="history" onclick="openHistory()"><span class="ic">🕘</span>History</button>
+      <button class="navitem" data-nav="settings" onclick="openSettings()"><span class="ic">👤</span>Profile</button>
+    </div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="screen" id="screen-camera">
+    <div class="camwrap" id="camwrap">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <div class="cam-top">
+        <button onclick="closeCamera()">✕</button>
+        <button onclick="toast('Tip: keep your hand inside the guide box, well lit')">?</button>
+      </div>
+      <div class="roi"><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i></div>
+      <div class="cam-hint" id="cam-hint">Place your hand inside the frame</div>
+      <div class="cam-fallback hidden" id="cam-fallback">
+        <div style="font-size:40px;">📷</div>
+        <h3 style="font-size:16px;">Camera unavailable</h3>
+        <p style="font-size:13px;" id="cam-fallback-msg">Allow camera access, or upload a photo instead.</p>
+        <button class="btn btn-primary btn-sm" onclick="openCamera()">Try Again</button>
+        <button class="btn btn-outline btn-sm" onclick="openInNewTab()">Open in New Tab</button>
+        <button class="btn btn-ghost btn-sm" onclick="triggerUpload()">Upload Image Instead</button>
+      </div>
+    </div>
+    <div class="cam-controls">
+      <button class="cam-side" onclick="triggerUpload()">🖼️</button>
+      <button class="shutter" id="shutter" onclick="capture()"></button>
+      <button class="cam-side" onclick="toast('Front/back switch not available on this device')">🔄</button>
+    </div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleUpload(event)">
+
+  <!-- PROCESSING -->
+  <div class="screen" id="screen-processing">
+    <div class="pad">
+      <div class="proc-frame"><canvas id="proc-canvas"></canvas><div class="scanline"></div></div>
+      <h3 style="margin-top:4px;">Analyzing Hand Sign…</h3>
+      <div class="proc-bar"><span id="proc-fill"></span></div>
+      <div class="checklist" id="checklist">
+        <div class="check-row" data-k="0"><span class="dotbox"></span>Reading camera frame</div>
+        <div class="check-row" data-k="1"><span class="dotbox"></span>Detecting hand region</div>
+        <div class="check-row" data-k="2"><span class="dotbox"></span>Estimating finger shape</div>
+        <div class="check-row" data-k="3"><span class="dotbox"></span>Matching closest sign</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div class="topbar"><button class="icon-btn" onclick="openHome()">🏠</button><h2>Result</h2><button class="icon-btn" onclick="openCamera()">📷</button></div>
+    <div class="grow">
+      <div class="result-hero"><canvas id="result-canvas"></canvas><div class="result-badge">✋ <span id="result-mode">Live Camera</span></div></div>
+      <div class="result-body">
+        <div class="result-label" id="result-label">A</div>
+        <div class="result-sub" id="result-sub">Letter</div>
+        <div class="conf-row"><span>Match</span><div class="conf-track"><span id="conf-fill" style="width:0%;"></span></div><span id="conf-num">0%</span></div>
+        <div class="result-actions">
+          <button class="btn btn-primary" onclick="openVoiceSheet()">🔊 Speak</button>
+          <button class="btn btn-ghost" onclick="copyResult()">📋 Copy</button>
+          <button class="btn btn-ghost" onclick="saveResult()">🤍 Save</button>
+        </div>
+        <div class="card desc-card">
+          <h3>Description</h3>
+          <p id="result-desc">—</p>
+        </div>
+        <h3 style="font-size:13px; text-align:left; margin-bottom:10px; color:var(--text-dim);">Related signs</h3>
+        <div class="related-row" id="related-row"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="screen-history">
+    <div class="topbar"><h2>History</h2><button class="icon-btn" onclick="clearHistory()">🗑️</button></div>
+    <div class="grow" id="history-list"></div>
+    <div class="bottomnav">
+      <button class="navitem" data-nav="home" onclick="openHome()"><span class="ic">🏠</span>Home</button>
+      <button class="navitem" data-nav="guide" onclick="openGuide()"><span class="ic">📘</span>Guide</button>
+      <button class="navcam" onclick="openCamera()">🤚</button>
+      <button class="navitem active" data-nav="history" onclick="openHistory()"><span class="ic">🕘</span>History</button>
+      <button class="navitem" data-nav="settings" onclick="openSettings()"><span class="ic">👤</span>Profile</button>
+    </div>
+  </div>
+
+  <!-- GUIDE -->
+  <div class="screen" id="screen-guide">
+    <div class="topbar"><h2>Alphabet Guide</h2><span></span></div>
+    <div class="segmented">
+      <button class="seg-btn active" data-tab="alpha" onclick="setGuideTab('alpha')">Alphabets</button>
+      <button class="seg-btn" data-tab="words" onclick="setGuideTab('words')">Words</button>
+      <button class="seg-btn" data-tab="expr" onclick="setGuideTab('expr')">Expressions</button>
+    </div>
+    <div class="grow">
+      <div class="az-grid" id="az-grid"></div>
+      <div class="word-list hidden" id="word-list"></div>
+      <div class="word-list hidden" id="expr-list"></div>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem" data-nav="home" onclick="openHome()"><span class="ic">🏠</span>Home</button>
+      <button class="navitem active" data-nav="guide" onclick="openGuide()"><span class="ic">📘</span>Guide</button>
+      <button class="navcam" onclick="openCamera()">🤚</button>
+      <button class="navitem" data-nav="history" onclick="openHistory()"><span class="ic">🕘</span>History</button>
+      <button class="navitem" data-nav="settings" onclick="openSettings()"><span class="ic">👤</span>Profile</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <div class="topbar"><h2>Settings</h2><span></span></div>
+    <div class="grow pad">
+      <div class="card" style="padding:16px; display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+        <div class="splash-glyph" style="width:48px; height:48px; font-size:20px; border-radius:14px;">🙂</div>
+        <div><b id="set-name" style="font-size:15px;">Guest</b><div style="font-size:12px; color:var(--text-dim);">Local profile · on this device</div></div>
+      </div>
+      <div class="card" style="padding:4px 16px; margin-bottom:16px;">
+        <div class="set-row"><span>Output language</span><b id="set-lang" style="color:var(--accent-blue); font-weight:600;">English</b></div>
+        <div class="set-row" onclick="toggleSpeak()" style="cursor:pointer;"><span>Speak results automatically</span><div class="toggle" id="autospeak-toggle"></div></div>
+        <div class="set-row"><span>Camera guide overlay</span><div class="toggle on"></div></div>
+      </div>
+      <button class="btn btn-outline" style="width:100%; margin-bottom:10px;" onclick="openLangSheet()">🌐 Change language</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="logout()">Log out</button>
+      <p style="text-align:center; font-size:11.5px; margin-top:18px;">SignBridge · demo build · all processing happens on this device</p>
+    </div>
+    <div class="bottomnav">
+      <button class="navitem" data-nav="home" onclick="openHome()"><span class="ic">🏠</span>Home</button>
+      <button class="navitem" data-nav="guide" onclick="openGuide()"><span class="ic">📘</span>Guide</button>
+      <button class="navcam" onclick="openCamera()">🤚</button>
+      <button class="navitem" data-nav="history" onclick="openHistory()"><span class="ic">🕘</span>History</button>
+      <button class="navitem active" data-nav="settings" onclick="openSettings()"><span class="ic">👤</span>Profile</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- voice sheet -->
+<div class="sheet-backdrop" id="voice-backdrop" onclick="closeVoiceSheet(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-head"><h3 style="font-size:16px;">Speak in</h3><button class="icon-btn" onclick="closeVoiceSheet()">✕</button></div>
+    <div id="lang-list"></div>
+    <button class="btn btn-primary" style="width:100%; margin-top:14px;" onclick="playVoice()">🔊 Play Voice</button>
+  </div>
+</div>
+
+<!-- letter detail sheet -->
+<div class="detail-backdrop" id="detail-backdrop" onclick="closeDetail(event)">
+  <div class="detail-sheet" onclick="event.stopPropagation()">
+    <div class="detail-glyph" id="detail-glyph">A</div>
+    <div id="detail-tag" style="font-size:11px; color:var(--text-dim); margin-bottom:10px;">LETTER</div>
+    <p id="detail-desc" style="font-size:13.5px; text-align:left;"></p>
+    <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="closeDetail()">Got it</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== data ===================== */
+const ALPHABET = {
+  A:"Make a fist with your fingers curled in and thumb resting on the side.",
+  B:"Hold your hand flat with fingers together pointing up, thumb folded across the palm.",
+  C:"Curve your fingers and thumb together into a C shape.",
+  D:"Point your index finger up while the other fingers curl in to touch the thumb.",
+  E:"Curl all fingertips down to touch the thumb, like a claw.",
+  F:"Touch your thumb and index finger into a circle, keeping the other three fingers up.",
+  G:"Point your index finger and thumb sideways, other fingers closed.",
+  H:"Extend your index and middle fingers together, pointing sideways.",
+  I:"Raise your pinky finger, fold the rest, thumb across the palm.",
+  J:"Like I, but trace the shape of a J in the air with your pinky.",
+  K:"Raise index and middle fingers in a V with the thumb touching between them.",
+  L:"Form an L shape with your thumb and index finger, other fingers folded.",
+  M:"Tuck your thumb under your index, middle and ring fingers.",
+  N:"Tuck your thumb under your index and middle fingers.",
+  O:"Curve your fingers and thumb together to form an O.",
+  P:"Like K, but pointed downward.",
+  Q:"Like G, but pointed downward.",
+  R:"Cross your index and middle fingers.",
+  S:"Make a fist with your thumb wrapped across the front of your fingers.",
+  T:"Tuck your thumb between your index and middle finger in a fist.",
+  U:"Hold your index and middle fingers up together, close side by side.",
+  V:"Raise your index and middle fingers in a V shape, spread apart.",
+  W:"Raise your index, middle and ring fingers, spread apart.",
+  X:"Bend your index finger into a hook shape, other fingers closed.",
+  Y:"Extend your thumb and pinky finger, fold the rest.",
+  Z:"Trace the letter Z in the air with your index finger."
+};
+const LIVE_LETTERS = ["A","D","V","W"]; // detectable by the on-device estimator
+const WORDS = {
+  Hello:"Open hand near your forehead, moving outward — a friendly wave hello.",
+  "Thank You":"Fingers touch your chin, then move forward and down toward the other person."
+};
+const EXPRESSIONS = {
+  Yes:"Make a fist and nod it up and down, like a nodding head.",
+  No:"Tap your index and middle fingers to your thumb, like a mouth saying no.",
+  Please:"Rub your flat hand in a circle on your chest.",
+  Sorry:"Circle a fist on your chest."
+};
+const LANGS = [
+  {code:"en-US", label:"English", flag:"🇺🇸"},
+  {code:"ta-IN", label:"தமிழ்", flag:"🇮🇳"},
+  {code:"hi-IN", label:"हिंदी", flag:"🇮🇳"},
+  {code:"te-IN", label:"తెలుగు", flag:"🇮🇳"},
+  {code:"ml-IN", label:"മലയാളം", flag:"🇮🇳"}
+];
+const WORD_TRANSLATIONS = {
+  Hello:{"en-US":"Hello","ta-IN":"வணக்கம்","hi-IN":"नमस्ते","te-IN":"హలో","ml-IN":"ഹലോ"},
+  "Thank You":{"en-US":"Thank you","ta-IN":"நன்றி","hi-IN":"धन्यवाद","te-IN":"ధన్యవాదాలు","ml-IN":"നന്ദി"},
+  Yes:{"en-US":"Yes","ta-IN":"ஆம்","hi-IN":"हाँ","te-IN":"అవును","ml-IN":"അതെ"},
+  No:{"en-US":"No","ta-IN":"இல்லை","hi-IN":"नहीं","te-IN":"లేదు","ml-IN":"ഇല്ല"}
+};
+
+/* ===================== state ===================== */
+const S = {
+  lang: localStorage.getItem('sb_lang') || 'en-US',
+  autospeak: localStorage.getItem('sb_autospeak') === '1',
+  stream: null,
+  lastResult: null,
+  guideTab: 'alpha',
+  onboardIndex: 0
+};
+
+function safe(fn){ try{ return fn(); } catch(e){ console.error(e); return null; } }
+function ls_get(k, fallback){ return safe(()=>{ const v = localStorage.getItem(k); return v===null? fallback : JSON.parse(v); }) ?? fallback; }
+function ls_set(k, v){ safe(()=> localStorage.setItem(k, JSON.stringify(v))); }
+
+/* ===================== navigation ===================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navitem').forEach(n=>n.classList.remove('active'));
+}
+function setActiveNav(name){
+  document.querySelectorAll(`.navitem[data-nav="${name}"]`).forEach(n=>n.classList.add('active'));
+}
+function openHome(){ stopCamera(); showScreen('screen-home'); setActiveNav('home'); renderHome(); }
+function openHistory(){ stopCamera(); showScreen('screen-history'); setActiveNav('history'); renderHistory(); }
+function openSettings(){ stopCamera(); showScreen('screen-settings'); setActiveNav('settings'); renderSettings(); }
+function openGuide(tab){ stopCamera(); showScreen('screen-guide'); setActiveNav('guide'); if(tab) setGuideTab(tab==='Words'?'words':tab.toLowerCase()); renderGuide(); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ===================== splash + onboarding ===================== */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    const seen = ls_get('sb_onboarded', false);
+    if(seen){ goHomeOrAuth(); } else { showScreen('screen-onboard'); renderOnboardDots(); }
+  }, 1400);
+});
+function renderOnboardDots(){
+  const wrap = document.getElementById('ob-dots'); wrap.innerHTML='';
+  for(let i=0;i<3;i++){ const d=document.createElement('div'); d.className='dot'+(i===S.onboardIndex?' active':''); wrap.appendChild(d); }
+}
+function nextOnboard(){
+  const slides = document.querySelectorAll('.ob-slide');
+  if(S.onboardIndex < slides.length-1){
+    slides[S.onboardIndex].classList.remove('active');
+    S.onboardIndex++;
+    slides[S.onboardIndex].classList.add('active');
+    renderOnboardDots();
+  } else {
+    ls_set('sb_onboarded', true);
+    goHomeOrAuth();
+  }
+}
+function goHomeOrAuth(){
+  ls_set('sb_onboarded', true);
+  const name = ls_get('sb_username', null);
+  if(name){ openHome(); } else { showScreen('screen-auth'); }
+}
+function doLogin(){
+  const v = document.getElementById('auth-name').value.trim();
+  if(!v){ toast('Enter a name to continue'); return; }
+  ls_set('sb_username', v);
+  openHome();
+}
+function doGuest(){ ls_set('sb_username', 'Guest'); openHome(); }
+function logout(){ safe(()=>localStorage.removeItem('sb_username')); showScreen('screen-auth'); }
+
+function renderHome(){
+  const name = ls_get('sb_username', 'there');
+  document.getElementById('home-greet').textContent = `Hello, ${name} 👋`;
+}
+function renderSettings(){
+  document.getElementById('set-name').textContent = ls_get('sb_username','Guest');
+  const l = LANGS.find(l=>l.code===S.lang) || LANGS[0];
+  document.getElementById('set-lang').textContent = l.label;
+  document.getElementById('autospeak-toggle').classList.toggle('on', S.autospeak);
+}
+function toggleSpeak(){
+  S.autospeak = !S.autospeak; ls_set('sb_autospeak', S.autospeak?'1':'0');
+  document.getElementById('autospeak-toggle').classList.toggle('on', S.autospeak);
+}
+
+/* ===================== camera ===================== */
+let overlayCtx, videoEl;
+function showCamFallback(msg){
+  document.getElementById('cam-fallback-msg').textContent = msg;
+  document.getElementById('cam-fallback').classList.remove('hidden');
+  document.getElementById('cam-hint').classList.add('hidden');
+}
+async function openCamera(){
+  showScreen('screen-camera');
+  document.getElementById('cam-fallback').classList.add('hidden');
+  document.getElementById('cam-hint').classList.remove('hidden');
+  videoEl = document.getElementById('video');
+  overlayCtx = document.getElementById('overlay').getContext('2d');
+
+  if(!window.isSecureContext){
+    showCamFallback('Camera needs a secure (https) page. Try opening this in a new tab.');
+    return;
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showCamFallback('This browser/preview does not expose camera access here. Try opening in a new tab.');
+    return;
+  }
+
+  const attempts = [
+    {video:{facingMode:{ideal:'environment'}}, audio:false},
+    {video:true, audio:false}
+  ];
+  let lastErr = null;
+  for(const constraints of attempts){
+    try{
+      S.stream = await navigator.mediaDevices.getUserMedia(constraints);
+      videoEl.srcObject = S.stream;
+      resizeOverlay();
+      requestAnimationFrame(overlayLoop);
+      return;
+    }catch(e){ lastErr = e; }
+  }
+  const name = lastErr ? lastErr.name : 'Unknown';
+  let msg = 'Could not access the camera. Upload a photo instead.';
+  if(name==='NotAllowedError' || name==='PermissionDeniedError'){
+    msg = 'Camera permission was blocked. Tap the lock / site-info icon in the address bar, allow Camera, then Try Again — or open this artifact in a new tab first.';
+  } else if(name==='NotFoundError' || name==='OverconstrainedError'){
+    msg = 'No usable camera was found on this device.';
+  } else if(name==='NotReadableError'){
+    msg = 'Another app is using the camera right now. Close it and try again.';
+  } else if(name==='SecurityError'){
+    msg = 'This preview is not allowed to use the camera. Open the artifact in a new tab and try again.';
+  }
+  showCamFallback(msg);
+}
+function openInNewTab(){
+  safe(()=> window.open(window.location.href, '_blank'));
+}
+function closeCamera(){ stopCamera(); openHome(); }
+function stopCamera(){
+  if(S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream = null; }
+}
+function resizeOverlay(){
+  const o = document.getElementById('overlay');
+  const wrap = document.getElementById('camwrap');
+  o.width = wrap.clientWidth; o.height = wrap.clientHeight;
+}
+window.addEventListener('resize', ()=>{ if(document.getElementById('screen-camera').classList.contains('active')) resizeOverlay(); });
+
+let overlayRunning = true;
+function overlayLoop(){
+  if(!document.getElementById('screen-camera').classList.contains('active') || !S.stream){ return; }
+  overlayCtx.clearRect(0,0,overlayCtx.canvas.width, overlayCtx.canvas.height);
+  requestAnimationFrame(overlayLoop);
+}
+
+function triggerUpload(){ document.getElementById('fileInput').click(); }
+function handleUpload(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  img.onload = ()=>{ runPipelineFromImage(img, 'Uploaded Image'); };
+  img.src = URL.createObjectURL(file);
+  evt.target.value = '';
+}
+function capture(){
+  if(!S.stream){ toast('Camera not available'); return; }
+  runPipelineFromVideo(videoEl, 'Live Camera');
+}
+
+/* ===================== hand-shape estimator (pure canvas, no network) ===================== */
+// Downscale the frame, build a skin-color mask, then raycast from the centroid
+// to approximate the hand's silhouette and count outward "finger" peaks.
+function estimateHand(sourceCanvas){
+  const W = sourceCanvas.width, H = sourceCanvas.height;
+  const ctx = sourceCanvas.getContext('2d');
+  const data = ctx.getImageData(0,0,W,H).data;
+
+  let sumX=0,sumY=0,count=0;
+  const mask = new Uint8Array(W*H);
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i = (y*W+x)*4;
+      const r=data[i], g=data[i+1], b=data[i+2];
+      // YCbCr skin thresholds
+      const Y = 0.299*r+0.587*g+0.114*b;
+      const Cb = 128 - 0.168736*r - 0.331264*g + 0.5*b;
+      const Cr = 128 + 0.5*r - 0.418688*g - 0.081312*b;
+      if(Y>60 && Cb>=77 && Cb<=127 && Cr>=133 && Cr<=173){
+        mask[y*W+x]=1; sumX+=x; sumY+=y; count++;
+      }
+    }
+  }
+  const areaRatio = count/(W*H);
+  if(areaRatio < 0.03){
+    return {present:false};
+  }
+  const cx = sumX/count, cy = sumY/count;
+  const steps = 48;
+  const radii = [];
+  const maxR = Math.sqrt(W*W+H*H)/2;
+  for(let s=0;s<steps;s++){
+    const angle = (s/steps)*Math.PI*2;
+    const dx = Math.cos(angle), dy = Math.sin(angle);
+    let r = 0;
+    for(let rr=2; rr<maxR; rr+=2){
+      const px = Math.round(cx+dx*rr), py = Math.round(cy+dy*rr);
+      if(px<0||py<0||px>=W||py>=H) break;
+      if(mask[py*W+px]) r = rr; else if(r>0) break;
+    }
+    radii.push(r);
+  }
+  const avg = radii.reduce((a,b)=>a+b,0)/radii.length;
+  const peaks = [];
+  for(let s=0;s<steps;s++){
+    const prev = radii[(s-2+steps)%steps], cur = radii[s], next = radii[(s+2)%steps];
+    if(cur > avg*1.28 && cur >= prev && cur >= next && cur > 8){
+      peaks.push({angle:(s/steps)*Math.PI*2, r:cur, s});
+    }
+  }
+  // merge peaks that are angularly close
+  const merged = [];
+  peaks.sort((a,b)=>b.r-a.r);
+  for(const p of peaks){
+    if(merged.every(m=> Math.min(Math.abs(m.s-p.s), steps-Math.abs(m.s-p.s)) > 4)) merged.push(p);
+  }
+  const fingerCount = Math.max(0, Math.min(5, merged.length));
+  const prominence = merged.length ? merged.reduce((a,m)=>a+(m.r/avg),0)/merged.length : 1;
+  const confidence = Math.round(Math.min(96, Math.max(58, 55 + prominence*14 + (areaRatio>0.15?4:0))));
+  return {present:true, cx, cy, avg, fingerCount, confidence, points: merged.map(m=>({x:cx+Math.cos(m.angle)*m.r, y:cy+Math.sin(m.angle)*m.r}))};
+}
+
+function classify(fingerCount){
+  const map = {
+    0:{label:"A", sub:"Letter", desc: ALPHABET.A},
+    1:{label:"D", sub:"Letter", desc: ALPHABET.D},
+    2:{label:"V", sub:"Letter", desc: ALPHABET.V},
+    3:{label:"W", sub:"Letter", desc: ALPHABET.W},
+    4:{label:"W", sub:"Letter", desc: ALPHABET.W},
+    5:{label:"Hello", sub:"Greeting", desc: WORDS.Hello}
+  };
+  return map[fingerCount] ?? map[0];
+}
+
+/* ===================== pipeline: capture -> process -> result ===================== */
+function runPipelineFromVideo(video, modeLabel){
+  const W = 160, H = Math.round(160*video.videoHeight/video.videoWidth) || 120;
+  const off = document.createElement('canvas'); off.width=W; off.height=H;
+  const octx = off.getContext('2d');
+  octx.translate(W,0); octx.scale(-1,1); // mirror to match preview
+  octx.drawImage(video, 0, 0, W, H);
+  const snap = document.createElement('canvas'); snap.width = video.videoWidth||320; snap.height = video.videoHeight||240;
+  const sctx = snap.getContext('2d');
+  sctx.translate(snap.width,0); sctx.scale(-1,1);
+  sctx.drawImage(video,0,0,snap.width,snap.height);
+  runPipeline(off, snap, modeLabel);
+}
+function runPipelineFromImage(img, modeLabel){
+  const W = 160, H = Math.round(160*img.height/img.width) || 120;
+  const off = document.createElement('canvas'); off.width=W; off.height=H;
+  off.getContext('2d').drawImage(img,0,0,W,H);
+  const snap = document.createElement('canvas'); snap.width = img.width; snap.height = img.height;
+  snap.getContext('2d').drawImage(img,0,0);
+  runPipeline(off, snap, modeLabel);
+}
+
+function runPipeline(sampleCanvas, displayCanvas, modeLabel){
+  stopCamera();
+  showScreen('screen-processing');
+  const pc = document.getElementById('proc-canvas');
+  pc.width = displayCanvas.width; pc.height = displayCanvas.height;
+  pc.getContext('2d').drawImage(displayCanvas,0,0);
+
+  const rows = document.querySelectorAll('#checklist .check-row');
+  rows.forEach(r=>r.classList.remove('done'));
+  document.getElementById('proc-fill').style.width='0%';
+
+  const est = estimateHand(sampleCanvas);
+  const steps = [0,1,2,3];
+  let i = 0;
+  const timer = setInterval(()=>{
+    if(i < steps.length){
+      rows[i].classList.add('done');
+      document.getElementById('proc-fill').style.width = Math.round(((i+1)/steps.length)*100)+'%';
+      i++;
+    } else {
+      clearInterval(timer);
+      setTimeout(()=> showResult(est, displayCanvas, modeLabel), 250);
+    }
+  }, 380);
+}
+
+function showResult(est, displayCanvas, modeLabel){
+  const rc = document.getElementById('result-canvas');
+  rc.width = displayCanvas.width; rc.height = displayCanvas.height;
+  const rctx = rc.getContext('2d');
+  rctx.drawImage(displayCanvas,0,0);
+
+  document.getElementById('result-mode').textContent = modeLabel;
+
+  if(!est || !est.present){
+    document.getElementById('result-label').textContent = '—';
+    document.getElementById('result-sub').textContent = 'No hand detected';
+    document.getElementById('result-desc').textContent = 'Bring your hand fully into frame, with good lighting and a plain background, then try again.';
+    document.getElementById('conf-fill').style.width='0%';
+    document.getElementById('conf-num').textContent='0%';
+    document.getElementById('related-row').innerHTML='';
+    S.lastResult = null;
+    showScreen('screen-result');
+    return;
+  }
+
+  // mark the detected hand centroid for visual feedback
+  const scale = rc.width / 160;
+  rctx.beginPath();
+  rctx.arc(est.cx*scale, est.cy*scale, 6, 0, Math.PI*2);
+  rctx.fillStyle = 'rgba(52,211,153,0.9)';
+  rctx.fill();
+  rctx.lineWidth = 2; rctx.strokeStyle = 'rgba(52,211,153,0.9)';
+  rctx.stroke();
+
+  const cls = classify(est.fingerCount);
+  document.getElementById('result-label').textContent = cls.label;
+  document.getElementById('result-sub').textContent = cls.sub;
+  document.getElementById('result-desc').textContent = cls.desc;
+  document.getElementById('conf-fill').style.width = est.confidence+'%';
+  document.getElementById('conf-num').textContent = est.confidence+'%';
+
+  const related = document.getElementById('related-row');
+  related.innerHTML='';
+  const others = LIVE_LETTERS.filter(l=>l!==cls.label).concat(['Hello'].filter(w=>w!==cls.label));
+  others.slice(0,4).forEach(l=>{
+    const c = document.createElement('div'); c.className='related-chip'; c.textContent = l.length>2? '👋' : l;
+    related.appendChild(c);
+  });
+
+  S.lastResult = {label:cls.label, sub:cls.sub, desc:cls.desc, confidence:est.confidence, time:Date.now()};
+  showScreen('screen-result');
+  if(S.autospeak) playVoice();
+}
+
+/* ===================== voice sheet ===================== */
+function openVoiceSheet(){
+  renderLangList('lang-list', (code)=>{ S.lang=code; ls_set('sb_lang',code); renderLangList('lang-list'); });
+  document.getElementById('voice-backdrop').classList.add('show');
+}
+function closeVoiceSheet(e){ if(e && e.target.id!=='voice-backdrop') return; document.getElementById('voice-backdrop').classList.remove('show'); }
+function openLangSheet(){ openVoiceSheet(); }
+function renderLangList(elId, onPick){
+  const wrap = document.getElementById(elId); wrap.innerHTML='';
+  LANGS.forEach(l=>{
+    const row = document.createElement('div'); row.className='lang-row'; row.style.cursor='pointer';
+    row.innerHTML = `<span class="lang-flag">${l.flag}</span><span>${l.label}</span>${l.code===S.lang?'<span class="lang-check">✓</span>':''}`;
+    row.onclick = ()=> (onPick? onPick(l.code) : (S.lang=l.code, ls_set('sb_lang',l.code), renderLangList(elId,onPick)));
+    wrap.appendChild(row);
+  });
+}
+function speakText(text, code){
+  safe(()=>{
+    if(!('speechSynthesis' in window)) { toast('Voice output not supported on this device'); return; }
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = code || S.lang;
+    const voices = speechSynthesis.getVoices();
+    const match = voices.find(v=>v.lang===u.lang) || voices.find(v=>v.lang && v.lang.startsWith(u.lang.split('-')[0]));
+    if(match) u.voice = match;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  });
+}
+function textFor(label, code){
+  if(WORD_TRANSLATIONS[label]) return WORD_TRANSLATIONS[label][code] || WORD_TRANSLATIONS[label]['en-US'];
+  return label; // single letters spoken as-is
+}
+function playVoice(){
+  if(!S.lastResult){ toast('Detect a sign first'); return; }
+  speakText(textFor(S.lastResult.label, S.lang), S.lang);
+  closeVoiceSheet();
+}
+function copyResult(){
+  if(!S.lastResult){ toast('Nothing to copy yet'); return; }
+  safe(()=> navigator.clipboard.writeText(S.lastResult.label));
+  toast('Copied to clipboard');
+}
+function saveResult(){
+  if(!S.lastResult){ toast('Nothing to save yet'); return; }
+  const hist = ls_get('sb_history', []);
+  hist.unshift(S.lastResult);
+  ls_set('sb_history', hist.slice(0,100));
+  toast('Saved to history');
+}
+
+/* ===================== history ===================== */
+function renderHistory(){
+  const hist = ls_get('sb_history', []);
+  const wrap = document.getElementById('history-list');
+  if(!hist.length){ wrap.innerHTML = '<div class="empty">No saved signs yet.<br>Detect a sign and tap Save.</div>'; return; }
+  wrap.innerHTML='';
+  hist.forEach((h,idx)=>{
+    const row = document.createElement('div'); row.className='hist-row';
+    const time = new Date(h.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    row.innerHTML = `<div class="hist-thumb">${h.label.length>2?'👋':h.label}</div>
+      <div class="hist-mid"><b>${h.label}</b><span>${h.sub} · ${time}</span></div>
+      <button class="hist-play">🔊</button>`;
+    row.querySelector('.hist-play').onclick = ()=> speakText(textFor(h.label, S.lang), S.lang);
+    wrap.appendChild(row);
+  });
+}
+function clearHistory(){
+  if(!ls_get('sb_history', []).length){ toast('History is already empty'); return; }
+  safe(()=>localStorage.removeItem('sb_history'));
+  renderHistory();
+  toast('History cleared');
+}
+
+/* ===================== guide ===================== */
+function setGuideTab(tab){
+  S.guideTab = tab;
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('az-grid').classList.toggle('hidden', tab!=='alpha');
+  document.getElementById('word-list').classList.toggle('hidden', tab!=='words');
+  document.getElementById('expr-list').classList.toggle('hidden', tab!=='expr');
+}
+function renderGuide(){
+  const az = document.getElementById('az-grid'); az.innerHTML='';
+  Object.keys(ALPHABET).forEach(letter=>{
+    const live = LIVE_LETTERS.includes(letter);
+    const cell = document.createElement('button'); cell.className='az-cell'+(live?' live':'');
+    cell.innerHTML = `<b>${letter}</b><span class="tag">${live?'Try it':'Guide'}</span>`;
+    cell.onclick = ()=> openDetail(letter, ALPHABET[letter], live?'LETTER · LIVE DETECTABLE':'LETTER');
+    az.appendChild(cell);
+  });
+  const wl = document.getElementById('word-list'); wl.innerHTML='';
+  Object.entries(WORDS).forEach(([w,d])=>{
+    const el = document.createElement('div'); el.className='card word-item';
+    el.innerHTML = `<b>${w}</b><p>${d}</p>`;
+    el.onclick = ()=> openDetail(w,d,'WORD');
+    wl.appendChild(el);
+  });
+  const el2 = document.getElementById('expr-list'); el2.innerHTML='';
+  Object.entries(EXPRESSIONS).forEach(([w,d])=>{
+    const el = document.createElement('div'); el.className='card word-item';
+    el.innerHTML = `<b>${w}</b><p>${d}</p>`;
+    el.onclick = ()=> openDetail(w,d,'EXPRESSION');
+    el2.appendChild(el);
+  });
+  setGuideTab(S.guideTab);
+}
+function openDetail(glyph, desc, tag){
+  document.getElementById('detail-glyph').textContent = glyph;
+  document.getElementById('detail-desc').textContent = desc;
+  document.getElementById('detail-tag').textContent = tag;
+  document.getElementById('detail-backdrop').classList.add('show');
+}
+function closeDetail(e){ if(e && e.target.id!=='detail-backdrop') return; document.getElementById('detail-backdrop').classList.remove('show'); }
+
+/* ===================== init ===================== */
+renderGuide();
+</script>
+</body>
+</html>
